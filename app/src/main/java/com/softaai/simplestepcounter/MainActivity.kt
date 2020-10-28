@@ -58,11 +58,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (resultCode) {
+            RESULT_OK -> {
+                val postSignInAction = FitActionRequestCode.values()[requestCode]
+                postSignInAction.let {
+                    performActionForRequestCode(postSignInAction)
+                }
+            }
+            else -> oAuthErrorMsg(requestCode, resultCode)
+        }
+    }
+
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(getGoogleAccount(), fitnessOptions)
 
     private fun performActionForRequestCode(requestCode: FitActionRequestCode) = when (requestCode) {
         FitActionRequestCode.READ_DATA -> readData()
         FitActionRequestCode.SUBSCRIBE -> subscribe()
+    }
+
+    private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
+        val message = """
+            There was an error signing into Fit. Check the troubleshooting section of the README
+            for potential issues.
+            Request code was: $requestCode
+            Result code was: $resultCode
+        """.trimIndent()
+        Log.e(TAG, message)
     }
 
     private fun subscribe() {
