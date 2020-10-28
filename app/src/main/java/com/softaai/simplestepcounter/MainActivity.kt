@@ -3,7 +3,7 @@ package com.softaai.simplestepcounter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
-const val TAG = "StepCounter"
+const val TAG = "SimpleStepCounter"
 
 enum class FitActionRequestCode {
     SUBSCRIBE,
