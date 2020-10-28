@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
         checkPermissionsAndRun(FitActionRequestCode.SUBSCRIBE)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndRun(fitActionRequestCode: FitActionRequestCode) {
         if (permissionApproved()) {
