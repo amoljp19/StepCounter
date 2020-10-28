@@ -4,10 +4,12 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -15,6 +17,7 @@ import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_main.*
 
 const val TAG = "SimpleStepCounter"
 
@@ -34,11 +37,15 @@ class MainActivity : AppCompatActivity() {
     private val runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkPermissionsAndRun(FitActionRequestCode.SUBSCRIBE)
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun checkPermissionsAndRun(fitActionRequestCode: FitActionRequestCode) {
         if (permissionApproved()) {
             fitSignIn(fitActionRequestCode)
@@ -112,6 +119,7 @@ class MainActivity : AppCompatActivity() {
                         else -> dataSet.dataPoints.first().getValue(Field.FIELD_STEPS).asInt()
                     }
                     Log.i(TAG, "Total steps: $total")
+                    tv_steps.text.toString() + "amol " + total
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "There was a problem getting the step count.", e)
@@ -120,6 +128,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun permissionApproved(): Boolean {
         val approved = if (runningQOrLater) {
             PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
@@ -131,6 +140,7 @@ class MainActivity : AppCompatActivity() {
         return approved
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestRuntimePermissions(requestCode: FitActionRequestCode) {
         val shouldProvideRationale =
                 ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACTIVITY_RECOGNITION)
