@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        checkPermissionsAndRun(FitActionRequestCode.READ_DATA)
+        checkPermissionsAndRun(FitActionRequestCode.SUBSCRIBE)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -119,11 +121,26 @@ class MainActivity : AppCompatActivity() {
                         else -> dataSet.dataPoints.first().getValue(Field.FIELD_STEPS).asInt()
                     }
                     Log.i(TAG, "Total steps: $total")
-                    tv_steps.text = total.toString()
+                    tv_steps.text = "Total steps : " + total
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "There was a problem getting the step count.", e)
                 }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the main; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_read_data) {
+            fitSignIn(FitActionRequestCode.READ_DATA)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
