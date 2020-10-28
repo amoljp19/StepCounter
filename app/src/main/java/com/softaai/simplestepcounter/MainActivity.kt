@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        checkPermissionsAndRun(FitActionRequestCode.SUBSCRIBE)
+        checkPermissionsAndRun(FitActionRequestCode.READ_DATA)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                         else -> dataSet.dataPoints.first().getValue(Field.FIELD_STEPS).asInt()
                     }
                     Log.i(TAG, "Total steps: $total")
-                    tv_steps.text.toString() + "amol " + total
+                    tv_steps.text = total.toString()
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "There was a problem getting the step count.", e)
