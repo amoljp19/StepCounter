@@ -92,7 +92,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun subscribe() {
-
+        Fitness.getRecordingClient(this, getGoogleAccount())
+                .subscribe(DataType.TYPE_STEP_COUNT_CUMULATIVE)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.i(TAG, "Successfully subscribed!")
+                    } else {
+                        Log.w(TAG, "There was a problem subscribing.", task.exception)
+                    }
+                }
     }
 
     private fun readData(){
