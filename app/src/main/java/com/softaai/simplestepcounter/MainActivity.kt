@@ -10,8 +10,10 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.Field
 import com.google.android.material.snackbar.Snackbar
 
 const val TAG = "SimpleStepCounter"
@@ -94,7 +96,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readData(){
-
+        Fitness.getHistoryClient(this, getGoogleAccount())
+                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
+                .addOnSuccessListener { dataSet ->
+                    val total = when {
+                        dataSet.isEmpty -> 0
+                        else -> dataSet.dataPoints.first().getValue(Field.FIELD_STEPS).asInt()
+                    }
+                    Log.i(TAG, "Total steps: $total")
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "There was a problem getting the step count.", e)
+                }
     }
 
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
