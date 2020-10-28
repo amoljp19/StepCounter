@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                         else -> dataSet.dataPoints.first().getValue(Field.FIELD_STEPS).asInt()
                     }
                     Log.i(TAG, "Total steps: $total")
-                    tv_steps.text = "Total steps : " + total
+                    tv_steps.text = "Updated steps : " + total
                 }
                 .addOnFailureListener { e ->
                     Log.w(TAG, "There was a problem getting the step count.", e)
