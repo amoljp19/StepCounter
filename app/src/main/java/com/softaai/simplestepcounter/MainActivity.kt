@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -19,22 +20,18 @@ import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataSet
-import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.DateFormat
-import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
-import kotlin.math.absoluteValue
 
 
 const val TAG = "SimpleStepCounter"
@@ -51,14 +48,14 @@ class MainActivity : AppCompatActivity() {
     val PAST_14_DAYS = 14
 
     private val fitnessOptions = FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE)
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+            .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_WRITE)
+            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
             .build()
 
     private val runningQOrLater =
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
-    private lateinit var dataSets: ArrayList<BarDataSet>
+    var sliderValue = 0
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +63,48 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         checkPermissionsAndRun(FitActionRequestCode.SUBSCRIBE)
-        //displayLastTwoWeeksData()
+
+        slider.addOnChangeListener { slider, value, fromUser ->
+            sliderValue = value.toInt()
+        }
+
+        imageView.setOnClickListener {
+            val cal = Calendar.getInstance()
+            val now = Date()
+            cal.time = now
+            val endTime = cal.timeInMillis
+            cal.add(Calendar.HOUR_OF_DAY, -1)
+            val startTime = cal.timeInMillis
+
+            val dataSource: DataSource = DataSource.Builder()
+                    .setAppPackageName(this)
+                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                    .setStreamName("Slider Step Count")
+                    .setType(DataSource.TYPE_RAW)
+                    .build()
+
+            val stepCountDelta = sliderValue
+            val dataSet = DataSet.create(dataSource)
+
+            val point: DataPoint = dataSet.createDataPoint()
+                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+            point.getValue(Field.FIELD_STEPS).setInt(stepCountDelta)
+            dataSet.add(point)
+
+            val response = Fitness.getHistoryClient(this, GoogleSignIn.getAccountForExtension(this, fitnessOptions))
+                    .insertData(dataSet)
+                    .addOnSuccessListener {
+                        val toast = Toast.makeText(applicationContext, "$sliderValue Steps inserted successfully", Toast.LENGTH_SHORT)
+                        toast.show()
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(TAG, "There was a problem getting the step count.", e)
+                    }
+
+            //Toast.makeText(applicationContext, "$response", Toast.LENGTH_LONG).show()
+
+        }
+
     }
 
     override fun onResume() {
@@ -306,7 +344,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    
+
     private fun showDataSet(dataSet: DataSet, dateFormat: DateFormat, timeFormat: DateFormat){
         var barDataSet:BarDataSet? = null
         var dataSets = arrayListOf<BarDataSet>()
