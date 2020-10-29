@@ -13,4 +13,9 @@
         android:orderInCategory="100"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_past_14_days_data"
+        android:title="@string/read_past_14_days_data"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
 </menu>
